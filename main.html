@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VexCoder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"><defs><radialGradient id="bg" cx="50%" cy="50%"><stop offset="0%" stop-color="%23667eea"/><stop offset="100%" stop-color="%23764ba2"/></radialGradient></defs><rect width="100%" height="100%" fill="url(%23bg)"/></svg>') center/cover;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .background-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyMCIgaGVpZ2h0PSIxMDgwIiB2aWV3Qm94PSIwIDAgMTkyMCAxMDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0ic2t5IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNGE5MGUyIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNjY3ZWVhIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iNzAlIiBmaWxsPSJ1cmwoI3NreSkiLz48ZWxsaXBzZSBjeD0iOTYwIiBjeT0iNzUwIiByeD0iOTYwIiByeT0iMzMwIiBmaWxsPSIjOGI3MzU1Ii8+PGVsbGlwc2UgY3g9Ijk2MCIgY3k9Ijc4MCIgcng9Ijg2MCIgcnk9IjI4MCIgZmlsbD0iIzZkNWEzZiIvPjxlbGxpcHNlIGN4PSI5NjAiIGN5PSI4MDAiIHJ4PSI3NjAiIHJ5PSIyNDAiIGZpbGw9IiM1ODRkMzMiLz48L3N2Zz4=') center/cover;
+            background-size: cover;
+            filter: blur(8px);
+            z-index: -2;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            z-index: 10;
+            padding: 20px;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            color: white;
+            width: 400px;
+            max-width: 90vw;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #000;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-text {
+            color: #4a9eff;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .username {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: white;
+        }
+
+        .bio-text {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-bottom: 24px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            font-size: 20px;
+            transition: background 0.2s;
+        }
+
+        .social-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .view-count {
+            position: absolute;
+            bottom: 12px;
+            left: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .music-player {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: white;
+            width: 400px;
+            max-width: 90vw;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .music-icon {
+            font-size: 24px;
+        }
+
+        .song-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .song-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            width: 40%;
+            transition: width 0.1s;
+        }
+
+        .control-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px;
+            transition: opacity 0.2s;
+        }
+
+        .control-btn:hover {
+            opacity: 0.7;
+        }
+
+        .play-btn {
+            font-size: 20px;
+        }
+
+        .volume-control {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            z-index: 100;
+        }
+
+        .volume-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .profile-card, .music-player {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .music-player {
+            animation-delay: 0.2s;
+        }
+
+        @media (max-width: 480px) {
+            .profile-card, .music-player {
+                width: 95vw;
+                padding: 24px 20px;
+            }
+            
+            .username {
+                font-size: 24px;
+            }
+            
+            .bio-text {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-image"></div>
+    <div class="overlay"></div>
+
+    <div class="container">
+        <div class="profile-card">
+            <div class="profile-avatar">
+                <div class="avatar-text">vexcoder<br>⋄⋄⋄⚈⋄</div>
+            </div>
+            
+            <h1 class="username">! Summer VexCoder</h1>
+            
+            <p class="bio-text">
+                Hey, I'm VexCoder, a 13-year-old developer! I<br>
+                mainly code in C#, Python, JS/TS, and a bit of<br>
+                Ruby. I create and mod Android games using<br>
+                Unity!
+            </p>
+            
+            <div class="role-badge">
+                📍 Unity Game Maker/Modder
+            </div>
+            
+            <div class="social-icons">
+                <a href="#" class="social-icon">💬</a>
+                <a href="#" class="social-icon">📺</a>
+            </div>
+            
+            <div class="view-count">
+                👁️ <span id="viewCount">14</span>
+            </div>
+        </div>
+
+        <div class="music-player">
+            <div class="music-icon">🎵</div>
+            
+            <div class="song-info">
+                <div class="song-title" id="songTitle">I Like The Way You Kiss Me</div>
+                <div class="progress-container">
+                    <span id="currentTime">2:00</span>
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <span id="totalTime">3:05</span>
+                </div>
+            </div>
+            
+            <div class="control-buttons">
+                <button class="control-btn" id="prevBtn">⏮</button>
+                <button class="control-btn play-btn" id="playBtn">⏸</button>
+                <button class="control-btn" id="nextBtn">⏭</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="volume-control">
+        <button class="volume-btn" id="volumeBtn">🔊</button>
+    </div>
+
+    <script>
+        // Tab title animation
+        const titles = [
+            "VexCoder",
+            "13 Year Old Dev",
+            "Unity Developer", 
+            "Game Modder",
+            "C# • Python • JS",
+            "Android Games",
+            "! Summer VexCoder"
+        ];
+        let titleIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+
+        function typeTitle() {
+            const currentTitle = titles[titleIndex];
+            
+            if (!isDeleting) {
+                document.title = currentTitle.substring(0, charIndex + 1);
+                charIndex++;
+                
+                if (charIndex === currentTitle.length) {
+                    setTimeout(() => {
+                        isDeleting = true;
+                    }, 2000);
+                }
+            } else {
+                document.title = currentTitle.substring(0, charIndex - 1);
+                charIndex--;
+                
+                if (charIndex === 0) {
+                    isDeleting = false;
+                    titleIndex = (titleIndex + 1) % titles.length;
+                }
+            }
+        }
+
+        setInterval(typeTitle, 150);
+
+        // Music player functionality
+        const songs = [
+            { title: "I Like The Way You Kiss Me", duration: "3:05" },
+            { title: "Chill Vibes Track", duration: "2:45" },
+            { title: "Summer Beats", duration: "4:20" }
+        ];
+
+        let currentSongIndex = 0;
+        let isPlaying = false;
+        let currentTime = 120; // 2:00 in seconds
+        let totalTime = 185; // 3:05 in seconds
+
+        const playBtn = document.getElementById('playBtn');
+        const songTitle = document.getElementById('songTitle');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalTimeEl = document.getElementById('totalTime');
+        const progressFill = document.getElementById('progressFill');
+        const progressBar = document.getElementById('progressBar');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const volumeBtn = document.getElementById('volumeBtn');
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateProgress() {
+            const progress = (currentTime / totalTime) * 100;
+            progressFill.style.width = progress + '%';
+            currentTimeEl.textContent = formatTime(currentTime);
+        }
+
+        function updateSong() {
+            const song = songs[currentSongIndex];
+            songTitle.textContent = song.title;
+            totalTimeEl.textContent = song.duration;
+        }
+
+        playBtn.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            playBtn.textContent = isPlaying ? '⏸' : '▶️';
+        });
+
+        prevBtn.addEventListener('click', () => {
+            currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+            updateSong();
+            currentTime = 0;
+            updateProgress();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            currentSongIndex = (currentSongIndex + 1) % songs.length;
+            updateSong();
+            currentTime = 0;
+            updateProgress();
+        });
+
+        progressBar.addEventListener('click', (e) => {
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const progress = clickX / rect.width;
+            currentTime = Math.floor(progress * totalTime);
+            updateProgress();
+        });
+
+        volumeBtn.addEventListener('click', () => {
+            const volumeIcons = ['🔇', '🔉', '🔊'];
+            const currentIcon = volumeBtn.textContent;
+            const currentIndex = volumeIcons.indexOf(currentIcon);
+            const nextIndex = (currentIndex + 1) % volumeIcons.length;
+            volumeBtn.textContent = volumeIcons[nextIndex];
+        });
+
+        // Simulate music progress
+        setInterval(() => {
+            if (isPlaying && currentTime < totalTime) {
+                currentTime++;
+                updateProgress();
+            }
+        }, 1000);
+
+        // Real-time view counter
+        let viewCount = 14;
+        const viewCountEl = document.getElementById('viewCount');
+        let lastUpdateTime = Date.now();
+
+        // Update views more frequently for real-time feel
+        setInterval(() => {
+            const now = Date.now();
+            const timeDiff = now - lastUpdateTime;
+            
+            // Higher chance of view increase based on time passed
+            let chanceIncrease = Math.min(0.3, timeDiff / 10000); // Max 30% chance
+            
+            if (Math.random() < chanceIncrease) {
+                viewCount++;
+                viewCountEl.textContent = viewCount;
+                lastUpdateTime = now;
+                
+                // Add a subtle animation when view count updates
+                viewCountEl.style.transform = 'scale(1.1)';
+                viewCountEl.style.color = '#4a9eff';
+                setTimeout(() => {
+                    viewCountEl.style.transform = 'scale(1)';
+                    viewCountEl.style.color = 'rgba(255, 255, 255, 0.7)';
+                }, 200);
+            }
+        }, 2000); // Check every 2 seconds
+
+        // Simulate burst activity occasionally
+        setInterval(() => {
+            if (Math.random() < 0.1) { // 10% chance every 30 seconds
+                const burstCount = Math.floor(Math.random() * 3) + 1; // 1-3 views
+                for (let i = 0; i < burstCount; i++) {
+                    setTimeout(() => {
+                        viewCount++;
+                        viewCountEl.textContent = viewCount;
+                        viewCountEl.style.transform = 'scale(1.15)';
+                        viewCountEl.style.color = '#ff6b6b';
+                        setTimeout(() => {
+                            viewCountEl.style.transform = 'scale(1)';
+                            viewCountEl.style.color = 'rgba(255, 255, 255, 0.7)';
+                        }, 300);
+                    }, i * 500);
+                }
+            }
+        }, 30000);
+
+        // Initialize
+        updateSong();
+        updateProgress();
+    </script>
+</body>
+</html>
