@@ -28,7 +28,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyMCIgaGVpZ2h0PSIxMDgwIiB2aWV3Qm94PSIwIDAgMTkyMCAxMDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0ic2t5IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNGE5MGUyIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNjY3ZWVhIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iNzAlIiBmaWxsPSJ1cmwoI3NreSkiLz48ZWxsaXBzZSBjeD0iOTYwIiBjeT0iNzUwIiByeD0iOTYwIiByeT0iMzMwIiBmaWxsPSIjOGI3MzU1Ii8+PGVsbGlwc2UgY3g9Ijk2MCIgY3k9Ijc4MCIgcng9Ijg2MCIgcnk9IjI4MCIgZmlsbD0iIzZkNWEzZiIvPjxlbGxpcHNlIGN4PSI5NjAiIGN5PSI4MDAiIHJ4PSI3NjAiIHJ5PSIyNDAiIGZpbGw9IiM1ODRkMzMiLz48L3N2Zz4=') center/cover;
+            background: url('https://s7g10.scene7.com/is/image/ktm/KTM-Racing-MXSX-Slider-Rossi-2025:XLarge?wid=1890&hei=1076&dpr=off') center/cover;
             background-size: cover;
             filter: blur(8px);
             z-index: -2;
@@ -344,6 +344,16 @@
         <button class="volume-btn" id="volumeBtn">🔊</button>
     </div>
 
+    <!-- Audio elements -->
+    <audio id="audio1" preload="auto">
+        <source src="song1.mp3" type="audio/mpeg">
+        <source src="song1.ogg" type="audio/ogg">
+    </audio>
+    <audio id="audio2" preload="auto">
+        <source src="song2.mp3" type="audio/mpeg">
+        <source src="song2.ogg" type="audio/ogg">
+    </audio>
+
     <script>
         // Tab title animation
         const titles = [
@@ -385,16 +395,17 @@
         setInterval(typeTitle, 150);
 
         // Music player functionality
+        const audio1 = document.getElementById('audio1');
+        const audio2 = document.getElementById('audio2');
+        let currentAudio = audio1;
+
         const songs = [
-            { title: "I Like The Way You Kiss Me", duration: "3:05" },
-            { title: "Chill Vibes Track", duration: "2:45" },
-            { title: "Summer Beats", duration: "4:20" }
+            { title: "I Like The Way You Kiss Me", duration: "3:05", audio: audio1 },
+            { title: "Chill Vibes Track", duration: "2:45", audio: audio2 }
         ];
 
         let currentSongIndex = 0;
         let isPlaying = false;
-        let currentTime = 120; // 2:00 in seconds
-        let totalTime = 185; // 3:05 in seconds
 
         const playBtn = document.getElementById('playBtn');
         const songTitle = document.getElementById('songTitle');
@@ -406,66 +417,118 @@
         const nextBtn = document.getElementById('nextBtn');
         const volumeBtn = document.getElementById('volumeBtn');
 
+        // Set initial volume
+        audio1.volume = 0.5;
+        audio2.volume = 0.5;
+
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
+            const secs = Math.floor(seconds % 60);
             return `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
         function updateProgress() {
-            const progress = (currentTime / totalTime) * 100;
-            progressFill.style.width = progress + '%';
-            currentTimeEl.textContent = formatTime(currentTime);
+            if (currentAudio.duration) {
+                const progress = (currentAudio.currentTime / currentAudio.duration) * 100;
+                progressFill.style.width = progress + '%';
+                currentTimeEl.textContent = formatTime(currentAudio.currentTime);
+                totalTimeEl.textContent = formatTime(currentAudio.duration);
+            }
         }
 
         function updateSong() {
             const song = songs[currentSongIndex];
             songTitle.textContent = song.title;
-            totalTimeEl.textContent = song.duration;
+            currentAudio = song.audio;
+        }
+
+        function playCurrentSong() {
+            // Pause all audio first
+            audio1.pause();
+            audio2.pause();
+            
+            // Play current song
+            currentAudio.play().catch(e => {
+                console.log('Audio play failed:', e);
+                // Fallback - user needs to interact first
+                isPlaying = false;
+                playBtn.textContent = '▶️';
+            });
+        }
+
+        function pauseCurrentSong() {
+            currentAudio.pause();
         }
 
         playBtn.addEventListener('click', () => {
             isPlaying = !isPlaying;
             playBtn.textContent = isPlaying ? '⏸' : '▶️';
+            
+            if (isPlaying) {
+                playCurrentSong();
+            } else {
+                pauseCurrentSong();
+            }
         });
 
         prevBtn.addEventListener('click', () => {
+            currentAudio.pause();
             currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
             updateSong();
-            currentTime = 0;
-            updateProgress();
+            if (isPlaying) {
+                playCurrentSong();
+            }
         });
 
         nextBtn.addEventListener('click', () => {
+            currentAudio.pause();
             currentSongIndex = (currentSongIndex + 1) % songs.length;
             updateSong();
-            currentTime = 0;
-            updateProgress();
+            if (isPlaying) {
+                playCurrentSong();
+            }
         });
 
         progressBar.addEventListener('click', (e) => {
             const rect = progressBar.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
             const progress = clickX / rect.width;
-            currentTime = Math.floor(progress * totalTime);
-            updateProgress();
+            if (currentAudio.duration) {
+                currentAudio.currentTime = progress * currentAudio.duration;
+            }
         });
 
         volumeBtn.addEventListener('click', () => {
             const volumeIcons = ['🔇', '🔉', '🔊'];
+            const volumeLevels = [0, 0.3, 0.7];
             const currentIcon = volumeBtn.textContent;
             const currentIndex = volumeIcons.indexOf(currentIcon);
             const nextIndex = (currentIndex + 1) % volumeIcons.length;
+            
             volumeBtn.textContent = volumeIcons[nextIndex];
+            const newVolume = volumeLevels[nextIndex];
+            audio1.volume = newVolume;
+            audio2.volume = newVolume;
         });
 
-        // Simulate music progress
-        setInterval(() => {
-            if (isPlaying && currentTime < totalTime) {
-                currentTime++;
-                updateProgress();
+        // Update progress continuously
+        setInterval(updateProgress, 100);
+
+        // Handle song end
+        audio1.addEventListener('ended', () => {
+            nextBtn.click();
+        });
+        
+        audio2.addEventListener('ended', () => {
+            nextBtn.click();
+        });
+
+        // Auto-play next song when current ends
+        currentAudio.addEventListener('ended', () => {
+            if (isPlaying) {
+                nextBtn.click();
             }
-        }, 1000);
+        });
 
         // Real-time view counter
         let viewCount = 14;
